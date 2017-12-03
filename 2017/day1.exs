@@ -70,6 +70,10 @@ input =
 		String.to_integer(List.first(System.argv))
 	end
 
+# Expected answers for default input
+# Part one: 1177
+# Part two: 1060
+
 IO.puts("Input: " <> Integer.to_string(input))
 IO.puts("Part one: "
 	<> Integer.to_string(DayOne.part_one(input)))

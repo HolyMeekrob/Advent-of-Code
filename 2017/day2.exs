@@ -69,6 +69,10 @@ input =
 		[214, 221, 265, 766, 959, 1038, 226, 1188, 1122, 117, 458, 1105, 1285, 1017, 274, 281]
 	]
 
+# Expected answers for default input
+# Part one: 36174
+# Part two: 244
+
 IO.write("Input: ")
 IO.inspect(input)
 IO.puts("Part one: " <> Integer.to_string(DayTwo.part_one(input)))
