@@ -12,11 +12,11 @@ defmodule DayFive do
 	end
 
 	defp jump_one(instructions, index, count) do
-		case Enum.fetch(instructions, index) do
-			:error -> count
-			{:ok, instruction} ->
+		case :array.get(index, instructions) do
+			:undefined -> count
+			instruction ->
 				new_index = index + instruction
-				new_instructions = List.replace_at(instructions, index, instruction + 1)
+				new_instructions = :array.set(index, instruction + 1, instructions)
 				jump_one(new_instructions, new_index, count + 1)
 		end
 	end
@@ -26,12 +26,12 @@ defmodule DayFive do
 	end
 
 	defp jump_two(instructions, index, count) do
-		case Enum.fetch(instructions, index) do
-			:error -> count
-			{:ok, instruction} ->
+		case :array.get(index, instructions) do
+			:undefined -> count
+			instruction ->
 				new_index = index + instruction
-				new_instructions = List.replace_at(instructions, index,
-					get_new_instruction(instruction))
+				new_instructions = :array.set(index, get_new_instruction(instruction),
+					instructions)
 				jump_two(new_instructions, new_index, count + 1)
 		end
 	end
@@ -51,11 +51,13 @@ input =
 			|> File.read!
 			|> String.split("\r\n")
 			|> Enum.map(&String.to_integer/1)
+			|> :array.from_list
 	else
 		System.argv
 		|> List.first
 		|> String.split
 		|> Enum.map(&String.to_integer/1)
+		|> :array.from_list
 	end
 
 # Expected answers for default input
