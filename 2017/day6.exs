@@ -1,42 +1,52 @@
 defmodule DaySix do
-	def part_one(banks) do
+	def run(banks) do
 		historical_banks = :array.new()
 		historical_banks = :array.set(0, banks, historical_banks)
-		count_reallocations(banks, historical_banks, :array.size(banks))
+		count_reallocations(banks, historical_banks)
 	end
 
-	def part_two(banks) do
-
-	end
-
-	defp count_reallocations(banks, historical_banks, bank_count, reallocation_count \\ 1) do
+	defp count_reallocations(banks, historical_banks, reallocation_count \\ 1) do
 		new_banks = reallocate(banks)
-		if (is_repeated(new_banks, historical_banks)) do
-			reallocation_count
+		repeat_gap = get_repeat_gap(new_banks, historical_banks)
+
+		if (repeat_gap > 0) do
+			{reallocation_count, repeat_gap}
 		else
 			historical_banks = :array.set(:array.size(historical_banks), new_banks, historical_banks)
-			count_reallocations(new_banks, historical_banks, bank_count, reallocation_count + 1)
+			count_reallocations(new_banks, historical_banks, reallocation_count + 1)
 		end
 	end
 
-	defp is_repeated(banks, historical_banks) do
+	defp get_repeat_gap(banks, historical_banks) do
+		result = :array.foldl(&array_contains/3, {banks, -1}, historical_banks)
+		if(elem(result, 1) > -1) do
+			:array.size(historical_banks) - elem(result, 1)
+		else
+			-1
+		end
+	end
+
+	defp array_contains(_, _, {banks, match_index}) when match_index > -1 do
+		{banks, match_index}
+	end
+
+	defp array_contains(index, banks_snapshot, {banks, _}) do
 		elements_match =
 			fn(idx, val, {arr, all_match}) ->
 				{arr, (all_match and (val === :array.get(idx, arr)))}
 			end
-			
+
 		array_equals =
 			fn(arr1, arr2) ->
 				(:array.size(arr1) === :array.size(arr2))
 					and elem(:array.foldl(elements_match, {arr2, true}, arr1), 1)
 			end
 
-		array_contains =
-			fn(_, banks_snapshot, previous_match) ->
-				previous_match or array_equals.(banks_snapshot, banks)
-			end
-
-		:array.foldl(array_contains, false, historical_banks)
+		if (array_equals.(banks_snapshot, banks)) do
+				{banks, index}
+		else
+			{banks, -1}
+		end
 	end
 
 	defp reallocate(banks) do
@@ -88,7 +98,8 @@ input =
 
 # Expected answers for default input
 # Part one: 7864
-# Part two: 
+# Part two: 1695
 
-IO.puts("Part one: " <> Integer.to_string(DaySix.part_one(input)))
-#IO.puts("Part two: " <> Integer.to_string(DayFive.part_two(input)))
+result = DaySix.run(input)
+IO.puts("Part one: " <> Integer.to_string(elem(result, 0)))
+IO.puts("Part two: " <> Integer.to_string(elem(result, 1)))
