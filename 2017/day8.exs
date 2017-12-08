@@ -16,11 +16,18 @@ defmodule DayEight do
 			}
 	end
 
-	def part_one(instructions) do
-		instructions
-		|> List.foldl(%{}, &run_instruction/2)
-		|> Map.values
-		|> Enum.max
+	def run(instructions) do
+		final_state = List.foldl(instructions, %{max_value: 0}, &run_instruction/2)
+		part_two = final_state.max_value
+		{part_one(final_state), part_two}
+	end
+
+	defp part_one(state) do
+		state
+			|> Map.pop(:max_value)
+			|> elem(1)
+			|> Map.values
+			|> Enum.max
 	end
 
 	defp run_instruction(instruction, state) do
@@ -61,13 +68,17 @@ defmodule DayEight do
 	defp update_state(%{modifier: "inc"} = instruction, state) do
 		register = instruction.register
 		current_value = Map.fetch!(state, register)
-		Map.put(state, instruction.register, current_value + instruction.modifier_operand)
+		new_value = current_value + instruction.modifier_operand
+		state = Map.put(state, instruction.register, new_value)
+		%{state | max_value: max(state.max_value, new_value)}
 	end
 
 	defp update_state(%{modifier: "dec"} = instruction, state) do
 		register = instruction.register
 		current_value = Map.fetch!(state, register)
-		Map.put(state, instruction.register, current_value - instruction.modifier_operand)
+		new_value = current_value - instruction.modifier_operand
+		state = Map.put(state, instruction.register, new_value)
+		%{state | max_value: max(state.max_value, new_value)}
 	end
 end
 
@@ -77,4 +88,10 @@ input =
 		|> String.split("\r\n")
 		|> Enum.map(&DayEight.parse_instruction/1)
 
-IO.puts("Part one: " <> Integer.to_string(DayEight.part_one(input)))
+output = DayEight.run(input)
+
+# Expected answers for default input
+# Part one: 5075
+# Part two: 7310
+IO.puts("Part one: " <> Integer.to_string(elem(output, 0)))
+IO.puts("Part two: " <> Integer.to_string(elem(output, 1)))
