@@ -1,11 +1,11 @@
 defmodule StreamState do
-	defstruct score: 0, depth: 0, in_comment: false, ignore_next: false
+	defstruct score: 0, depth: 0, garbage_characters: 0, in_comment: false, ignore_next: false
 end
 
 defmodule DayNine do
-	def part_one(stream) do
+	def run(stream) do
 		final_state = read_next(stream, %StreamState{})
-		final_state.score
+		{final_state.score, final_state.garbage_characters}
 	end
 
 	defp read_next(stream, state) do
@@ -28,7 +28,7 @@ defmodule DayNine do
 	end
 
 	defp process(_, %{in_comment: true} = state) do
-		state
+		%{state | garbage_characters: state.garbage_characters + 1}
 	end
 
 	defp process("<", state) do
@@ -58,7 +58,8 @@ input =
 
 # Expected answers for default input
 # Part one: 17390
-# Part two: 
+# Part two: 7825
 
-IO.puts("Part one: " <> Integer.to_string(DayNine.part_one(input)))
-#IO.puts("Part two: " <> Integer.to_string(DayNine.part_two(input)))
+result = DayNine.run(input)
+IO.puts("Part one: " <> Integer.to_string(elem(result, 0)))
+IO.puts("Part two: " <> Integer.to_string(elem(result, 1)))
