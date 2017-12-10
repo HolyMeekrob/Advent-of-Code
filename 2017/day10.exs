@@ -121,5 +121,3 @@ IO.puts("Part one: " <> Integer.to_string(DayTen.part_one(part_one_input)))
 part_two_output = DayTen.part_two(part_two_input)
 IO.write("Part two: ")
 IO.inspect(part_two_output, base: :hex)
-
-A9D0E68649D0174C8756A59BA21D4DC6
