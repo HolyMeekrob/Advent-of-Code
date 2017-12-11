@@ -1,9 +1,12 @@
 defmodule DayEleven do
-	def part_one(dirs) do
-		dirs
-		|> List.foldl({0, 0}, &move/2)
-		|> absolute_coordinate
-		|> get_distance(0)
+	def run(dirs) do
+		end_position = List.foldl(dirs, {{0, 0}, 0}, &move_and_record/2)
+		{get_distance(elem(end_position, 0)), elem(end_position, 1)}
+	end
+
+	defp move_and_record(dir, data) do
+		new_pos = move(dir, elem(data, 0))
+		{new_pos, max(elem(data, 1), get_distance(new_pos))}
 	end
 
 	defp move("n", {x, y}) do
@@ -30,20 +33,12 @@ defmodule DayEleven do
 		{x - 2, y - 1}
 	end
 
-	defp get_distance({0, 0}, steps) do
-		steps
-	end
-
-	defp get_distance({x, 0}, steps) do
-		get_distance({x - 2, 1}, steps + 1)
-	end
-
-	defp get_distance({0, y}, steps) do
-		get_distance({0, y - 2}, steps + 1)
-	end
-
-	defp get_distance({x, y}, steps) do
-		get_distance({x - 2, y - 1}, steps + 1)
+	defp get_distance(position) do
+		{x, y} = absolute_coordinate(position)
+		case y - div(x, 2) do
+			n when n < 0 -> div(x, 2)
+			n -> div(x, 2) + div(n, 2)
+		end
 	end
 
 	defp absolute_coordinate({x, y}) do
@@ -66,4 +61,6 @@ input =
 # Part one: 796
 # Part two: 
 
-IO.puts("Part one: " <> Integer.to_string(DayEleven.part_one(input)))
+result = DayEleven.run(input)
+IO.puts("Part one: " <> Integer.to_string(elem(result, 0)))
+IO.puts("Part two: " <> Integer.to_string(elem(result, 1)))
