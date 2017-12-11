@@ -59,7 +59,7 @@ input =
 
 # Expected answers for default input
 # Part one: 796
-# Part two: 
+# Part two: 1585
 
 result = DayEleven.run(input)
 IO.puts("Part one: " <> Integer.to_string(elem(result, 0)))
