@@ -12,7 +12,8 @@ defmodule DayTen do
 	end
 
 	def part_two(lengths) do
-		lengths
+		lengths		
+		|> Enum.concat([17, 31, 73, 47, 23])
 		|> iterate(initialize_knot(255), 64)
 		|> Enum.chunk_every(16)
 		|> Enum.map(&hash/1)
@@ -110,12 +111,10 @@ part_two_input =
 part_two_input =
 	part_two_input
 		|> String.to_charlist
-		|> Enum.concat([17, 31, 73, 47, 23])
 
 # Expected answers for default input
 # Part one:3770
 # Part two: a9d0e68649d0174c8756a59ba21d4dc6
-
 
 IO.puts("Part one: " <> Integer.to_string(DayTen.part_one(part_one_input)))
 part_two_output = DayTen.part_two(part_two_input)
