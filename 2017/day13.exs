@@ -1,5 +1,5 @@
 defmodule Firewall do
-	defstruct layers: %{}, packet: -1, severity: 0
+	defstruct layers: %{}
 end
 
 defmodule Layer do
@@ -8,10 +8,15 @@ end
 
 defmodule DayThirteen do
 	def part_one(input) do
-		firewall = initialize(input)
-		firewall
-		|> step(get_total_depth(firewall))
-		|> Map.fetch!(:severity)
+		input
+		|> initialize
+		|> get_severity
+	end
+
+	def part_two(input) do
+		input
+		|> initialize
+		|> run_until_never_caught
 	end
 
 	defp initialize(input) do
@@ -19,56 +24,19 @@ defmodule DayThirteen do
 			Map.put(acc, x, %Layer{range: input[x], scanner: 0, direction: :down})
 		end
 
-		%Firewall{
+		firewall = %Firewall{
 			layers: List.foldl(Map.keys(input), %{}, create_layer),
-			packet: -1,
-			severity: 0
 		}
+
+		states = Enum.scan(1..get_total_depth(firewall), firewall, &move_scanners/2)
+		[firewall | states]
 	end
 
 	defp get_total_depth(firewall) do
 		Enum.max(Map.keys(firewall.layers))
 	end
 
-	defp step(firewall, remaining_layers) when remaining_layers < 0 do
-		firewall
-	end
-
-	defp step(firewall, remaining_layers) do
-		firewall
-		|> increment_packet
-		|> accumulate_severity
-		|> move_scanners
-		|> step(remaining_layers - 1)
-	end
-
-	defp increment_packet(%Firewall{packet: x} = firewall) do
-		%Firewall{firewall | packet: x + 1}
-	end
-
-	defp accumulate_severity(%Firewall{severity: x} = firewall) do
-		severity = 
-			if (packet_caught?(firewall)) do
-				x + calculate_severity(firewall)
-			else
-				x
-			end
-		%Firewall{firewall | severity: severity}
-	end
-
-	defp packet_caught?(%Firewall{layers: layers, packet: packet}) do
-		if (Map.has_key?(layers, packet)) do
-			layers[packet].scanner === 0
-		else
-			false
-		end
-	end
-
-	defp calculate_severity(%Firewall{layers: layers, packet: packet}) do
-		packet * layers[packet].range
-	end
-
-	defp move_scanners(%Firewall{layers: layers} = firewall) do
+	defp move_scanners(_, %Firewall{layers: layers} = firewall) do
 		move_scanner = fn(depth, acc) ->
 			layer = layers[depth]
 			cond do
@@ -90,6 +58,50 @@ defmodule DayThirteen do
 
 		%Firewall{firewall | layers: updated_layers}
 	end
+
+	defp get_severity(states) do
+		states
+		|> List.foldl(%{caught: false, severity: 0, index: 0}, &accumulate_severity/2)
+		|> Map.fetch!(:severity)
+	end
+
+	defp never_caught?(states) do
+		states
+		|> List.foldl(%{caught: false, severity: 0, index: 0}, &accumulate_severity/2)
+		|> Map.fetch!(:caught)
+		|> Kernel.not
+	end
+
+	defp accumulate_severity(%Firewall{layers: layers} = firewall, %{caught: been_caught, severity: acc, index: i}) do
+		caught = packet_caught?(firewall, i)
+		new_severity = 
+			if (caught and Map.has_key?(layers, i)) do
+				acc + i * layers[i].range
+			else
+				acc
+		end
+
+		%{caught: been_caught or caught, severity: new_severity, index: i + 1}
+	end
+
+	defp packet_caught?(%Firewall{layers: layers}, layer) do
+		if (Map.has_key?(layers, layer)) do
+			layers[layer].scanner === 0
+		else
+			false
+		end
+	end
+
+	defp run_until_never_caught(states, count \\ 0) do
+		if (never_caught?(states)) do
+			count
+		else
+			states
+			|> Enum.drop(1)
+			|> List.insert_at(-1, move_scanners(nil, Enum.at(states, -1)))
+			|> run_until_never_caught(count + 1)
+		end
+	end
 end
 
 parse_input = fn(line, map) ->
@@ -106,6 +118,8 @@ input =
 
 # Expected answers for default input
 # Part one: 1316
-# Part two: 
+# Part two: 3840052
 IO.puts("Part one: " <> Integer.to_string(DayThirteen.part_one(input)))
-# IO.puts("Part two: " <> Integer.to_string(DayThirteen.part_two(input)))
+
+# Warning: Part two is slow (takes about 3 minutes on my machine)
+IO.puts("Part two: " <> Integer.to_string(DayThirteen.part_two(input)))
