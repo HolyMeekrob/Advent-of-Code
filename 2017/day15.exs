@@ -5,6 +5,10 @@ defmodule DayFifteen do
 		count_matches(pair, 0, 40000000)
 	end
 
+	def part_two(pair) do
+		count_matches(pair, 0, 5000000)
+	end
+
 	defp count_matches(_, count, 0) do
 		count
 	end
@@ -13,21 +17,18 @@ defmodule DayFifteen do
 		a = get_next_a(a)
 		b = get_next_b(b)
 
-		# IO.inspect(a)
-		# IO.inspect(b)
-		
-		# IO.puts(display_binary(a))
-		# IO.puts(display_binary(b))
-		# IO.puts("")
-
 		count =
-			if (get_low_16(a) === get_low_16(b)) do
+			if (nums_match?(a, b)) do
 				count + 1
 			else
 				count
 			end
 
 		count_matches({a, b}, count, generations_remaining - 1)
+	end
+
+	defp nums_match?(a, b) do
+		get_low_16(a) === get_low_16(b)
 	end
 
 	defp get_low_16(num) do
@@ -67,7 +68,7 @@ input =
 	end
 
 # Expected answers for default input
-# Part one: 
+# Part one: 592
 # Part two: 
 
 IO.puts("Part one: " <> Integer.to_string(DayFifteen.part_one(input)))
