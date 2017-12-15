@@ -2,20 +2,23 @@ import Bitwise
 
 defmodule DayFifteen do
 	def part_one(pair) do
-		count_matches(pair, 0, 40000000)
+		accept? = fn(_) -> true end
+		count_matches(pair, 0, accept?, accept?, 40000000)
 	end
 
 	def part_two(pair) do
-		count_matches(pair, 0, 5000000)
+		accept_a? = fn(a) -> rem(a, 4) === 0 end
+		accept_b? = fn(b) -> rem(b, 8) === 0 end
+		count_matches(pair, 0, accept_a?, accept_b?, 5000000)
 	end
 
-	defp count_matches(_, count, 0) do
+	defp count_matches(_, count, _, _, 0) do
 		count
 	end
 
-	defp count_matches({a, b}, count, generations_remaining) do
-		a = get_next_a(a)
-		b = get_next_b(b)
+	defp count_matches({a, b}, count, a_ok?, b_ok?, generations_remaining) do
+		a = get_next_a(a, a_ok?)
+		b = get_next_b(b, b_ok?)
 
 		count =
 			if (nums_match?(a, b)) do
@@ -24,7 +27,7 @@ defmodule DayFifteen do
 				count
 			end
 
-		count_matches({a, b}, count, generations_remaining - 1)
+		count_matches({a, b}, count, a_ok?, b_ok?, generations_remaining - 1)
 	end
 
 	defp nums_match?(a, b) do
@@ -36,22 +39,22 @@ defmodule DayFifteen do
 		num &&& 65535
 	end
 
-	defp get_next_a(a) do
-		get_next(a, 16807)
+	defp get_next_a(a, a_ok?) do
+		get_next(a, 16807, a_ok?)
 	end
 
-	defp get_next_b(b) do
-		get_next(b, 48271)
+	defp get_next_b(b, b_ok?) do
+		get_next(b, 48271, b_ok?)
 	end
 
-	defp get_next(num, factor) do
-		rem(num * factor, 2147483647)
+	defp get_next(num, factor, ok?) do
+		next = rem(num * factor, 2147483647)
+		if (ok?.(next)) do
+			next
+		else
+			get_next(next, factor, ok?)
+		end
 	end
-
-	# defp display_binary(num) do
-	# 	Integer.to_string(num, 2)
-	# 	|> String.pad_leading(32, "0")
-	# end
 end
 
 
@@ -69,7 +72,7 @@ input =
 
 # Expected answers for default input
 # Part one: 592
-# Part two: 
+# Part two: 320
 
 IO.puts("Part one: " <> Integer.to_string(DayFifteen.part_one(input)))
-# IO.puts("Part two: " <> Integer.to_string(DayFifteen.part_two(input)))
+IO.puts("Part two: " <> Integer.to_string(DayFifteen.part_two(input)))
