@@ -41,29 +41,46 @@ defmodule DayTwenty do
 		Enum.find_index(particles, &(&1 === closest_to_origin))
 	end
 
+	def part_two(particles) do
+		run(particles, 10000)
+		|> length
+	end
+
+	defp run(particles, 0) do
+		particles
+	end
+
+	defp run(particles, num) do
+		particles
+			|> remove_collisions
+			|> Enum.map(&step/1)
+			|> run(num - 1)
+	end
+
+	defp remove_collisions(particles) do
+		particles
+		|> Enum.group_by(&(Map.fetch!(&1, :pos)))
+		|> Map.values
+		|> Enum.filter(&(length(&1) === 1))
+		|> Enum.map(&(Enum.at(&1, 0)))
+	end
+
+	defp step(%Particle{pos: pos, vel: vel, acc: acc} = particle) do
+		vel = add_dimensions(vel, acc)
+		pos = add_dimensions(pos, vel)
+		%Particle{particle | pos: pos, vel: vel}
+	end
+
+	defp add_dimensions({x1, y1, z1}, {x2, y2, z2}) do
+		{x1 + x2, y1 + y2, z1 + z2}
+	end
+
 	defp get_smallest_for_attribute(particles, attr) do
 			particles
 			|> Enum.map(&(Map.fetch!(&1, attr)))
 			|> List.foldl({0, [], nil}, &get_smallest/2)
 			|> elem(1)
 			|> Enum.map(&(Enum.at(particles, &1)))
-	end
-
-	defp get_smallest_acceleration(particle, {index, indexes, min}) do
-		acceleration = total(particle.acc)
-		cond do
-			min === nil ->
-				{index + 1, [index], acceleration}
-
-			min === acceleration ->
-				{index + 1, [index | indexes ], acceleration}
-
-			acceleration > min ->
-				{index + 1, indexes, min}
-			
-			true ->
-				{index + 1, [index], acceleration}
-		end
 	end
 
 	defp get_smallest(dimensions, {index, indexes, min}) do
@@ -98,6 +115,7 @@ input =
 
 # Expected answers for default input
 # Part one: 161
-# Part two: 
+# Part two: 438
 
 IO.puts("Part one: " <> Integer.to_string(DayTwenty.part_one(input)))
+IO.puts("Part two: " <> Integer.to_string(DayTwenty.part_two(input)))
