@@ -34,8 +34,14 @@ defmodule DayTwentyOne do
 
 	def part_one(rules) do
 		get_initial_state()
-		|> step(rules, 1)
+		|> step(rules, 5)
+		|> count_ones
+	end
 
+	def part_two(rules) do
+		get_initial_state()
+		|> step(rules, 18)
+		|> count_ones
 	end
 
 	defp get_initial_state do
@@ -60,7 +66,7 @@ defmodule DayTwentyOne do
 		state
 		|> sections
 		|> Enum.map(&(process(&1, rules)))
-		# |> merge
+		|> merge
 	end
 
 	defp sections(state) do
@@ -91,13 +97,32 @@ defmodule DayTwentyOne do
 	end
 
 	defp merge(sections) do
-		
+		map_tuple_to_list = fn(lst) -> Enum.map(lst, &Tuple.to_list/1) end
+		num =
+			sections
+			|> length
+			|> :math.sqrt
+			|> round
+
+		sections
+		|> Enum.chunk_every(num)
+		|> Enum.map(&List.zip/1)
+		|> Enum.map(map_tuple_to_list)
+		|> flatten
+		|> Enum.map(&List.flatten/1)
 	end
 
 	defp rule_matches?(%Rule{in: input}, section) do
+		flip_h = flip_horizontal(input)
+		flip_v = flip_vertical(input)
+		
+		any_rotation_matches?(input, section)
+			or any_rotation_matches?(flip_h, section)
+			or any_rotation_matches?(flip_v, section)
+	end
+
+	def any_rotation_matches?(input, section) do
 		(section === input)
-			or (section === flip_vertical(input))
-			or (section === flip_horizontal(input))
 			or (section === rotate(input, 1))
 			or (section === rotate(input, 2))
 			or (section === rotate(input, 3))
@@ -108,7 +133,7 @@ defmodule DayTwentyOne do
 	end
 
 	defp flip_horizontal(grid) do
-		Enum.map(&Enum.reverse/1)
+		Enum.map(grid, &Enum.reverse/1)
 	end
 
 	defp rotate(grid, 0) do
@@ -122,6 +147,13 @@ defmodule DayTwentyOne do
 		|> Enum.map(&Enum.reverse/1)
 		|> rotate(num - 1)
 	end
+
+	defp count_ones(grid) do
+		grid
+		|> List.flatten
+		|> Enum.filter(&(&1))
+		|> length
+	end
 end
 
 
@@ -132,4 +164,11 @@ input =
 	|> Enum.map(&DayTwentyOne.parse_rule/1)
 	|> Enum.group_by(&(length(Map.fetch!(&1, :in))))
 
-DayTwentyOne.part_one(input)
+# Expected answers for default input
+# Part one: 184
+# Part two: 2810258
+
+IO.puts("Part one: " <> Integer.to_string(DayTwentyOne.part_one(input)))
+
+# Warning: slow!
+IO.puts("Part two: " <> Integer.to_string(DayTwentyOne.part_two(input)))
