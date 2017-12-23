@@ -52,8 +52,31 @@ defmodule DayTwentyThree do
 		|> Map.fetch!(:mult_count)
 	end
 
+	def part_two() do
+		# init_two()
+		# |> loop_1
+		# |> Map.fetch!(:h)
+
+		Stream.unfold(108400, fn 125417 -> nil; n -> {n, n + 17} end)
+		|> Enum.to_list
+		|> List.foldl(0, &count_non_primes/2)
+	end
+
+	defp count_non_primes(num, count) do
+		if (is_prime?(num)) do
+			count
+		else
+			count + 1
+		end
+	end
+
+	defp is_prime?(num) do
+		half = div(num, 2)
+		!Enum.any?(2..half, &(rem(num, &1) === 0))
+	end
+
 	defp init(instructions) do
-		registers = %{ a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0 }
+		registers = %{a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, h: 0}
 		%State
 		{
 			instructions: instructions,
@@ -121,7 +144,7 @@ end
 
 # Expected answers for default input
 # Part one: 6724
-# Part two: 
+# Part two: 903
 
 input =
 	"input/day23.txt"
@@ -130,3 +153,4 @@ input =
 	|> Enum.map(&DayTwentyThree.parse_instruction/1)
 
 IO.puts("Part one: " <> Integer.to_string(DayTwentyThree.part_one(input)))
+IO.puts("Part two: " <> Integer.to_string(DayTwentyThree.part_two()))
