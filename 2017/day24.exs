@@ -5,9 +5,22 @@ defmodule DayTwentyFour do
 		{String.to_integer(a), String.to_integer(b)}
 	end
 
-	def part_one(input) do
-		input
-		|> build_bridges(0)
+	def run(input) do
+		all_bridges = build_bridges(input, 0)
+		
+		{part_one(all_bridges), part_two(all_bridges)}
+	end
+
+	def part_one(bridges) do
+		bridges
+		|> Enum.map(&bridge_value/1)
+		|> Enum.max
+	end
+
+	def part_two(bridges) do
+		bridges
+		|> List.foldl({0, []}, &get_longest/2)
+		|> elem(1)
 		|> Enum.map(&bridge_value/1)
 		|> Enum.max
 	end
@@ -61,6 +74,20 @@ defmodule DayTwentyFour do
 	defp flatten(lst) do
 		List.foldl(lst, [], &(&2 ++ &1))
 	end
+
+	defp get_longest(bridge, {max_length, bridges}) do
+		bridge_length = length(bridge)
+		cond do
+			bridge_length < max_length ->
+				{max_length, bridges}
+			
+			bridge_length === max_length ->
+				{max_length, [bridge | bridges]}
+			
+			true ->
+				{bridge_length, [bridge]}
+		end
+	end
 end
 
 input = 
@@ -72,6 +99,8 @@ input =
 
 # Expected answers for default input
 # Part one: 1511
-# Part two: 
+# Part two: 1471
 
-IO.puts("Part one: " <> Integer.to_string(DayTwentyFour.part_one(input)))
+output = DayTwentyFour.run(input)
+IO.puts("Part one: " <> Integer.to_string(elem(output, 0)))
+IO.puts("Part two: " <> Integer.to_string(elem(output, 1)))
