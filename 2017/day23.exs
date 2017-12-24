@@ -53,10 +53,6 @@ defmodule DayTwentyThree do
 	end
 
 	def part_two() do
-		# init_two()
-		# |> loop_1
-		# |> Map.fetch!(:h)
-
 		Stream.unfold(108400, fn 125417 -> nil; n -> {n, n + 17} end)
 		|> Enum.to_list
 		|> List.foldl(0, &count_non_primes/2)
