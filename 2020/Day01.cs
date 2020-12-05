@@ -6,7 +6,7 @@ namespace Advent._2020
 {
 	public class Day01 : IDay
 	{
-		private static int[] Input = new[]
+		private static readonly int[] Input = new[]
 		{
 			1742,
 			1763,
@@ -210,8 +210,7 @@ namespace Advent._2020
 			1327
 		};
 
-		// Solution: 719796
-		private string GetPartOne()
+		private static string GetPartOne()
 		{
 			var sortedInput = Input.OrderBy(Identity).ToArray();
 			for (int i = 0; i < sortedInput.Length; ++i)
@@ -226,7 +225,7 @@ namespace Advent._2020
 			return "Error: Could not find a match";
 		}
 
-		private string GetPartTwo()
+		private static string GetPartTwo()
 		{
 			var sortedInput = Input.OrderBy(Identity).ToArray();
 
@@ -253,9 +252,6 @@ namespace Advent._2020
 			return "Error: Could not find a match";
 		}
 
-		public (string, string) GetResult()
-		{
-			return (GetPartOne(), GetPartTwo());
-		}
+		public (string, string) GetResult() => (GetPartOne(), GetPartTwo());
 	}
 }
