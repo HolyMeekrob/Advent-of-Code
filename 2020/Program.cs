@@ -8,7 +8,8 @@ namespace Advent._2020
 		private static readonly Dictionary<int, IDay> Solutions = new Dictionary<int, IDay>
 		{
 			{ 1, new Day01() },
-			{ 2, new Day02() }
+			{ 2, new Day02() },
+			{ 3, new Day03() }
 		};
 
 		static void Main(string[] args)
