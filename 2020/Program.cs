@@ -14,7 +14,8 @@ namespace Advent._2020
 			{ 5, new Day05() },
 			{ 6, new Day06() },
 			{ 7, new Day07() },
-			{ 8, new Day08() }
+			{ 8, new Day08() },
+			{ 9, new Day09() }
 		};
 
 		static void Main(string[] args)
