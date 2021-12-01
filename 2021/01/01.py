@@ -1,5 +1,6 @@
 from functools import partial, reduce
 from pathlib import Path
+import time
 from typing import Callable, Iterable, Tuple
 
 from utils.functional import compose
@@ -43,24 +44,37 @@ get_increasing_triplets_count: Callable[[list[int]], int] = compose(
 )
 
 
-def get_depths(lines: list[str]) -> list[int]:
-    return [int(line) for line in lines]
-
-
-get_increasing_depths_count: Callable[[list[str]], int] = compose(
-    get_increasing_numbers_count, get_depths
-)
-
-get_increasing_depth_triplets_count: Callable[[list[str]], int] = compose(
-    get_increasing_triplets_count, get_depths
-)
-
-
 with open(path) as file:
-    lines = file.readlines()
+    depths = list(map(int, file.readlines()))
 
-part_one = get_increasing_depths_count(lines)
-part_two = get_increasing_depth_triplets_count(lines)
+start_slow = time.perf_counter_ns()
+part_one = get_increasing_numbers_count(depths)
+part_two = get_increasing_triplets_count(depths)
+end_slow = time.perf_counter_ns()
 
-print(f"Part one: {part_one}")
-print(f"Part two: {part_two}")
+start_quick = time.perf_counter_ns()
+part_one_quick = sum(
+    [1 for index in range(1, len(depths)) if depths[index - 1] < depths[index]]
+)
+
+part_two_quick = sum(
+    [1 for index in range(3, len(depths)) if depths[index] > depths[index - 3]]
+)
+end_quick = time.perf_counter_ns()
+
+slow_time = end_slow - start_slow
+quick_time = end_quick - start_quick
+
+print(f"Part one (slow): {part_one}")
+print(f"Part two (slow): {part_two}")
+print(f"Slow timer: {slow_time} ns")
+
+print()
+
+print(f"Part one (quick): {part_one_quick}")
+print(f"Part two (quick): {part_two_quick}")
+print(f"Quick timer: {quick_time} ns")
+
+print()
+
+print(f"Slow was {round(((slow_time - quick_time) / quick_time) * 100, 2)}% slower")
