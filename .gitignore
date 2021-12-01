@@ -1,3 +1,7 @@
 */[Bb]in/
 */[Oo]bj/
 */.vs/
+*/.vscode/
+*/.venv/
+*.pyc
+__pycache__/
