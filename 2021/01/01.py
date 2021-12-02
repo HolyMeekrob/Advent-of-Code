@@ -1,6 +1,6 @@
 from functools import partial, reduce
 from pathlib import Path
-import time
+from time import perf_counter_ns
 from typing import Callable, Iterable, Tuple
 
 from utils.functional import compose
@@ -44,37 +44,39 @@ get_increasing_triplets_count: Callable[[list[int]], int] = compose(
 )
 
 
-with open(path) as file:
-    depths = list(map(int, file.readlines()))
+def run():
 
-start_slow = time.perf_counter_ns()
-part_one = get_increasing_numbers_count(depths)
-part_two = get_increasing_triplets_count(depths)
-end_slow = time.perf_counter_ns()
+    with open(path) as file:
+        depths = list(map(int, file.readlines()))
 
-start_quick = time.perf_counter_ns()
-part_one_quick = sum(
-    [1 for index in range(1, len(depths)) if depths[index - 1] < depths[index]]
-)
+    start_slow = perf_counter_ns()
+    part_one = get_increasing_numbers_count(depths)
+    part_two = get_increasing_triplets_count(depths)
+    end_slow = perf_counter_ns()
 
-part_two_quick = sum(
-    [1 for index in range(3, len(depths)) if depths[index] > depths[index - 3]]
-)
-end_quick = time.perf_counter_ns()
+    start_quick = perf_counter_ns()
+    part_one_quick = sum(
+        [1 for index in range(1, len(depths)) if depths[index - 1] < depths[index]]
+    )
 
-slow_time = end_slow - start_slow
-quick_time = end_quick - start_quick
+    part_two_quick = sum(
+        [1 for index in range(3, len(depths)) if depths[index] > depths[index - 3]]
+    )
+    end_quick = perf_counter_ns()
 
-print(f"Part one (slow): {part_one}")
-print(f"Part two (slow): {part_two}")
-print(f"Slow timer: {slow_time} ns")
+    slow_time = end_slow - start_slow
+    quick_time = end_quick - start_quick
 
-print()
+    print(f"Part one (slow): {part_one}")
+    print(f"Part two (slow): {part_two}")
+    print(f"Slow timer: {slow_time} ns")
 
-print(f"Part one (quick): {part_one_quick}")
-print(f"Part two (quick): {part_two_quick}")
-print(f"Quick timer: {quick_time} ns")
+    print()
 
-print()
+    print(f"Part one (quick): {part_one_quick}")
+    print(f"Part two (quick): {part_two_quick}")
+    print(f"Quick timer: {quick_time} ns")
 
-print(f"Slow was {round(((slow_time - quick_time) / quick_time) * 100, 2)}% slower")
+    print()
+
+    print(f"Slow was {round(((slow_time - quick_time) / quick_time) * 100, 2)}% slower")
