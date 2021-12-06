@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import groupby
 from pathlib import Path
 
 from utils.iterable import flatten
@@ -63,18 +64,15 @@ def __print_grid(grid: list[list[int]]):
 
 
 def __get_overlapped_points_count(segments: list[LineSegment]):
-    width = max([max(seg.start.x, seg.end.x) for seg in segments]) + 1
-    height = max([max(seg.start.y, seg.end.y) for seg in segments]) + 1
+    traversed_points = sorted(
+        list(
+            map(
+                lambda p: (p.x, p.y), flatten(map(lambda seg: seg.get_path(), segments))
+            )
+        )
+    )
 
-    grid = [[0] * width for _ in range(height)]
-
-    for segment in segments:
-        for point in segment.get_path():
-            grid[point.y][point.x] += 1
-
-    # __print_grid(grid)
-    # print("\n")
-    return sum([1 for val in flatten(grid) if val > 1])
+    return len([k for k, g in groupby(traversed_points) if len(list(g)) > 1])
 
 
 def __get_part_one(line_segments: list[LineSegment]):
