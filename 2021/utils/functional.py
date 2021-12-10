@@ -1,4 +1,7 @@
 from functools import reduce
+from typing import TypeVar
+
+T = TypeVar("T")
 
 
 def __compose2(f, g):
@@ -7,3 +10,7 @@ def __compose2(f, g):
 
 def compose(*fs):
     return reduce(__compose2, fs)
+
+
+def identity(x: T):
+    return x
