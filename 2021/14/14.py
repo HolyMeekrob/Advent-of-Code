@@ -1,5 +1,5 @@
-from functools import reduce
-from itertools import groupby, pairwise
+from collections import Counter
+from itertools import pairwise
 from pathlib import Path
 
 filename = "14.txt"
@@ -7,35 +7,18 @@ path = Path(__file__).parent.joinpath(filename)
 
 
 def __get_initial_pair_counts(template: str):
-    pairs: list[str] = list(map(lambda s: "".join(s), pairwise(template)))
-
-    counts: dict[str, int] = {}
-    for pair in pairs:
-        if pair not in counts:
-            counts[pair] = 0
-
-        counts[pair] += 1
-
-    return counts
+    return Counter(map(lambda s: "".join(s), pairwise(template)))
 
 
-def __get_pair_counts(
-    rules: dict[str, str], counts: dict[str, int], steps: int
-) -> dict[str, int]:
+def __get_pair_counts(rules: dict[str, str], counts: Counter, steps: int) -> Counter:
     if steps == 0:
         return counts
 
-    next_counts = {}
+    next_counts = Counter()
     for pair in counts:
         insertion = rules[pair]
         p1 = f"{pair[0]}{insertion}"
         p2 = f"{insertion}{pair[1]}"
-
-        if p1 not in next_counts:
-            next_counts[p1] = 0
-
-        if p2 not in next_counts:
-            next_counts[p2] = 0
 
         next_counts[p1] += counts[pair]
         next_counts[p2] += counts[pair]
@@ -46,15 +29,12 @@ def __get_pair_counts(
 def __get_counts(rules: dict[str, str], template: str, steps: int):
     pair_counts = __get_pair_counts(rules, __get_initial_pair_counts(template), steps)
 
-    counts: dict[str, int] = {template[0]: 1}
+    counts = Counter({template[0]: 1})
     for (pair, count) in pair_counts.items():
-        (_, b) = pair
-        if b not in counts:
-            counts[b] = 0
+        counts[pair[1]] += count
 
-        counts[b] += count
-
-    return max(counts.values()) - min(counts.values())
+    ordered_counts = counts.most_common()
+    return ordered_counts[0][1] - ordered_counts[-1][1]
 
 
 def __get_part_one(rules: dict[str, str], template: str):
