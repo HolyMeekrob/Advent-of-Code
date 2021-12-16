@@ -1,10 +1,7 @@
 import heapq
 from itertools import product
-from operator import pos
 from pathlib import Path
 import sys
-
-from utils.iterable import flatten
 
 filename = "15.txt"
 path = Path(__file__).parent.joinpath(filename)
@@ -89,6 +86,8 @@ def __visit(grid: Grid, position: tuple[int, int], allow_diagonal: bool):
     return neighbors
 
 
+# Thank you Djikstra
+# https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
 def __get_shortest_path(grid: Grid):
     to_visit = []
     start = grid[0][0]
