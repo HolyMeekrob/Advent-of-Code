@@ -1,5 +1,4 @@
-﻿using _2023;
-using _2023.Days;
+﻿using _2023.Days;
 using _2023.Utils;
 
 int day = default;
@@ -9,8 +8,32 @@ if (args.IsEmpty() || !int.TryParse(args[0], out day))
 {
 	while (day == default)
 	{
+		bool? isTesting = null;
+
+		string? input;
+		while (isTesting is null)
+		{
+			Console.WriteLine("Are you testing? (y/N)");
+			input = Console.ReadLine();
+
+			if (
+				input is null
+				|| input.Equals("")
+				|| input.Equals("n", StringComparison.InvariantCultureIgnoreCase)
+			)
+			{
+				isTesting = false;
+			}
+			else if (input.Equals("y", StringComparison.InvariantCultureIgnoreCase))
+			{
+				isTesting = true;
+			}
+		}
+
+		isTest = isTesting.Value;
+
 		Console.WriteLine("Enter a day:");
-		var input = Console.ReadLine();
+		input = Console.ReadLine();
 		if (!int.TryParse(input, out day))
 		{
 			Console.WriteLine($"Invalid day: {input}");
