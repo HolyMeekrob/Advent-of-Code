@@ -13,4 +13,7 @@ public static class InputUtils
 		var filenamePart = isTest && testPart is not null ? $"_{testPart}" : "";
 		return Path.Combine(InputDir, $"{filenameNumber}_{filenameBase}{filenamePart}.txt");
 	}
+
+	public static string[] GetAllLines(bool isTest, int day, int? testPart = null) =>
+		File.ReadAllLines(GetInputFilename(isTest, day, testPart));
 }

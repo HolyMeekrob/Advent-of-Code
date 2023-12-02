@@ -12,7 +12,7 @@ public sealed class Day1 : IDay
 	#region Puzzle one
 
 	private static int RunPuzzleOne(bool isTest) =>
-		GetLines(isTest, 1).Select(GetNumberPartOne).Sum();
+		GetAllLines(isTest, 1).Select(GetNumberPartOne).Sum();
 
 	private static int GetNumberPartOne(string line) =>
 		GetFirstNumberPartOne(line) * 10 + GetLastNumberPartOne(line);
@@ -26,7 +26,7 @@ public sealed class Day1 : IDay
 	#region Puzzle two
 
 	private static int RunPuzzleTwo(bool isTest) =>
-		GetLines(isTest, 2).Select(GetNumberPartTwo).Sum();
+		GetAllLines(isTest, 2).Select(GetNumberPartTwo).Sum();
 
 	private static int GetNumberPartTwo(string line) =>
 		GetFirstNumberPartTwo(line) * 10 + GetLastNumberPartTwo(line);
@@ -117,7 +117,4 @@ public sealed class Day1 : IDay
 		);
 
 	#endregion Puzzle two
-
-	private static string[] GetLines(bool isTest, int part) =>
-		File.ReadAllLines(GetInputFilename(isTest, 1, part));
 }
