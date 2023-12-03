@@ -52,5 +52,6 @@ static (string Part1, string Part2) RunDay(int day, bool isTest) =>
 	{
 		01 => new Day1().Run(isTest),
 		02 => new Day2().Run(isTest),
+		03 => new Day3().Run(isTest),
 		_ => throw new ArgumentException($"Day {day} is not implemented", nameof(day), null),
 	};
