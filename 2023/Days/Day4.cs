@@ -1,7 +1,5 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using static _2023.Utils.InputUtils;
-using LineNumber = (int Row, int Col, int Num, int Length);
 
 namespace _2023.Days;
 
