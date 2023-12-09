@@ -26,4 +26,11 @@ public static class EnumerableExtensions
 	/// <param name="source">The sequence of integers.</param>
 	/// <returns>The product of all the integers in the sequence.</returns>
 	public static int Product(this IEnumerable<int> source) => source.Aggregate((x, y) => x * y);
+
+	/// <summary>
+	/// Calculates the product of all long integers in the given sequence.
+	/// </summary>
+	/// <param name="source">The sequence of long integers.</param>
+	/// <returns>The product of all long integers in the sequence.</returns>
+	public static long Product(this IEnumerable<long> source) => source.Aggregate((x, y) => x * y);
 }
