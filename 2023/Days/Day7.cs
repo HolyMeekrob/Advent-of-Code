@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Text.RegularExpressions;
+using _2023.Utils;
 using static _2023.Utils.InputUtils;
 
 namespace _2023.Days;
@@ -8,16 +9,15 @@ public sealed partial class Day7 : IDay
 {
 	public (string PartOne, string PartTwo) Run(bool isTest)
 	{
-		var lines = GetAllLines(isTest, 7);
-		return (RunPuzzleOne(lines).ToString(), RunPuzzleTwo(lines).ToString());
+		var games = GetAllLines(isTest, 7).Select(CreateGame).ToList();
+		return (RunPuzzleOne(games).ToString(), RunPuzzleTwo(games).ToString());
 	}
 
 	#region Puzzle one
 
-	private static int RunPuzzleOne(IReadOnlyList<string> lines) =>
-		lines
-			.Select(CreateGame)
-			.OrderBy(game => game.Hand, new HandComparer())
+	private static int RunPuzzleOne(IReadOnlyList<Game> games) =>
+		games
+			.OrderBy(game => game.Hand, new HandComparer(false))
 			.Select((game, index) => GetWinning(game, index + 1))
 			.Sum();
 
@@ -44,10 +44,11 @@ public sealed partial class Day7 : IDay
 
 	#region Puzzle two
 
-	private static int RunPuzzleTwo(IReadOnlyList<string> lines)
-	{
-		return 0;
-	}
+	private static int RunPuzzleTwo(IReadOnlyList<Game> games) =>
+		games
+			.OrderBy(game => game.Hand, new HandComparer(true))
+			.Select((game, index) => GetWinning(game, index + 1))
+			.Sum();
 
 	#endregion Puzzle two
 
@@ -65,7 +66,7 @@ public sealed partial class Day7 : IDay
 			'8' => Card.Eight,
 			'9' => Card.Nine,
 			'T' => Card.Ten,
-			'J' => Card.Jack,
+			'J' => Card.JackOrJoker,
 			'Q' => Card.Queen,
 			'K' => Card.King,
 			'A' => Card.Ace,
@@ -84,32 +85,70 @@ public sealed partial class Day7 : IDay
 			Card.Eight => '8',
 			Card.Nine => '9',
 			Card.Ten => 'T',
-			Card.Jack => 'J',
+			Card.JackOrJoker => 'J',
 			Card.Queen => 'Q',
 			Card.King => 'K',
 			Card.Ace => 'A',
 			_ => throw new ArgumentException($"Invalid card: {card}")
 		};
 
-	private static HandType GetHandType(Hand hand)
+	private static HandType GetHandType(Hand hand, bool useJokers)
 	{
-		var groups = hand.ToLookup(card => card)
-			.Select(group => group.Count())
-			.OrderDescending()
-			.ToList();
+		return !useJokers ? GetHandTypeWithoutJokers() : GetHandTypeWithJokers();
 
-		return groups[0] switch
+		HandType GetHandTypeWithoutJokers()
 		{
-			5 => HandType.FiveOfAKind,
-			4 => HandType.FourOfAKind,
-			3 => groups[1] == 2 ? HandType.FullHouse : HandType.ThreeOfAKind,
-			2 => groups[1] == 2 ? HandType.TwoPair : HandType.OnePair,
-			_ => HandType.HighCard
-		};
+			var counts = hand.ToLookup(card => card)
+				.Select(group => group.Count())
+				.OrderDescending()
+				.ToList();
+
+			return counts[0] switch
+			{
+				5 => HandType.FiveOfAKind,
+				4 => HandType.FourOfAKind,
+				3 => counts[1] == 2 ? HandType.FullHouse : HandType.ThreeOfAKind,
+				2 => counts[1] == 2 ? HandType.TwoPair : HandType.OnePair,
+				_ => HandType.HighCard,
+			};
+		}
+
+		HandType GetHandTypeWithJokers()
+		{
+			var groups = hand.ToLookup(card => card);
+			var counts = hand.ToLookup(card => card)
+				.Where(group => group.Key != Card.JackOrJoker)
+				.Select(group => group.Count())
+				.OrderDescending()
+				.ToList();
+
+			if (counts.IsEmpty())
+			{
+				counts =  [0];
+			}
+
+			var jokerCount = groups[Card.JackOrJoker].Count();
+
+			return (counts[0] + jokerCount) switch
+			{
+				5 => HandType.FiveOfAKind,
+				4 => HandType.FourOfAKind,
+				3 => counts[1] == 2 ? HandType.FullHouse : HandType.ThreeOfAKind,
+				2 => counts[1] == 2 ? HandType.TwoPair : HandType.OnePair,
+				_ => HandType.HighCard,
+			};
+		}
 	}
 
 	private sealed class HandComparer : IComparer<Hand>
 	{
+		private readonly bool _useJokers;
+
+		public HandComparer(bool useJokers)
+		{
+			_useJokers = useJokers;
+		}
+
 		public int Compare(Hand? x, Hand? y)
 		{
 			if (x is null)
@@ -122,8 +161,8 @@ public sealed partial class Day7 : IDay
 				return 1;
 			}
 
-			var xType = GetHandType(x);
-			var yType = GetHandType(y);
+			var xType = GetHandType(x, _useJokers);
+			var yType = GetHandType(y, _useJokers);
 
 			if (xType != yType)
 			{
@@ -134,7 +173,40 @@ public sealed partial class Day7 : IDay
 			var mismatchIndex = matches.FindIndex(cards => cards.First != cards.Second);
 			return mismatchIndex == -1
 				? 0
-				: matches[mismatchIndex].First.CompareTo(matches[mismatchIndex].Second);
+				: new CardComparer(_useJokers).Compare(
+					matches[mismatchIndex].First,
+					matches[mismatchIndex].Second
+				);
+		}
+	}
+
+	public sealed class CardComparer : IComparer<Card>
+	{
+		private readonly bool _useJokers;
+
+		public CardComparer(bool useJokers)
+		{
+			_useJokers = useJokers;
+		}
+
+		public int Compare(Card x, Card y)
+		{
+			if (!_useJokers)
+			{
+				return x.CompareTo(y);
+			}
+
+			if (x == y)
+			{
+				return 0;
+			}
+
+			if (x == Card.JackOrJoker)
+			{
+				return -1;
+			}
+
+			return y == Card.JackOrJoker ? 1 : x.CompareTo(y);
 		}
 	}
 
@@ -142,7 +214,7 @@ public sealed partial class Day7 : IDay
 
 	#region Types
 
-	private enum Card
+	public enum Card
 	{
 		Two,
 		Three,
@@ -153,7 +225,7 @@ public sealed partial class Day7 : IDay
 		Eight,
 		Nine,
 		Ten,
-		Jack,
+		JackOrJoker,
 		Queen,
 		King,
 		Ace,
