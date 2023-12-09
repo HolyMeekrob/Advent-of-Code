@@ -5,22 +5,145 @@ namespace _2023.Days;
 
 public partial class Day5 : IDay
 {
+	private const string FirstMapName = "seed";
+	private const string LastMapName = "location";
+
 	public (string PartOne, string PartTwo) Run(bool isTest)
 	{
 		var lines = GetAllLines(isTest, 5);
-		return (RunPuzzleOne(lines).ToString(), RunPuzzleTwo(lines).ToString());
+		var almanac = CreateAlmanac(lines);
+		return (RunPuzzleOne(almanac).ToString(), RunPuzzleTwo(almanac).ToString());
 	}
 
 	#region Puzzle one
 
-	private static long RunPuzzleOne(IReadOnlyList<string> lines)
-	{
-		var almanac = CreateAlmanac(lines);
-		return almanac
+	private static long RunPuzzleOne(Almanac almanac) =>
+		almanac
 			.Seeds
-			.Select(seed => MapToValue(seed, "seed", "location", almanac.Maps))
+			.Select(seed => MapToValue(seed, FirstMapName, LastMapName, almanac.Maps))
 			.Min();
+
+	private static long MapToValue(long val, string from, string final, IReadOnlyList<Map> maps)
+	{
+		while (!string.Equals(from, final, StringComparison.Ordinal))
+		{
+			var map = maps.First(m => m.From.Equals(from, StringComparison.Ordinal));
+			long? mappedVal = null;
+			foreach (var range in map.Ranges)
+			{
+				var offset = val - range.SourceStart;
+				if (offset >= 0 && offset < range.Length)
+				{
+					mappedVal = range.DestinationStart + offset;
+					break;
+				}
+			}
+
+			val = mappedVal ?? val;
+			from = map.To;
+		}
+
+		return val;
 	}
+
+	#endregion Puzzle one
+
+	#region Puzzle two
+
+	// Note: This is not optimized and takes a minute to run
+	private static long RunPuzzleTwo(Almanac almanac)
+	{
+		var reversedAlmanac = GetReversedAlmanac(almanac);
+		var seedRanges = GetSeedRanges(almanac.Seeds).OrderBy(range => range.Start).ToList();
+
+		var locationNumber = 0L;
+		while (true)
+		{
+			var mappedSeedNumber = MapToValue(
+				locationNumber,
+				LastMapName,
+				FirstMapName,
+				reversedAlmanac.Maps
+			);
+			if (
+				seedRanges.Any(
+					range => mappedSeedNumber >= range.Start && mappedSeedNumber <= range.End
+				)
+			)
+			{
+				return locationNumber;
+			}
+
+			++locationNumber;
+		}
+	}
+
+	private static Almanac GetReversedAlmanac(Almanac almanac) =>
+		almanac with
+		{
+			Maps = almanac.Maps.Select(GetReversedMap).ToList(),
+		};
+
+	private static Map GetReversedMap(Map map) =>
+		new()
+		{
+			From = map.To,
+			To = map.From,
+			Ranges = GetReversedRanges(map),
+		};
+
+	private static List<MapRange> GetReversedRanges(Map map)
+	{
+		var mappedRanges = map.Ranges
+			.Select(GetReversedRange)
+			.OrderBy(range => range.SourceStart)
+			.ToList();
+		var allRanges = new List<MapRange>();
+		long start = 0;
+
+		// Add missing ranges
+		foreach (var range in mappedRanges)
+		{
+			if (start < range.SourceStart)
+			{
+				allRanges.Add(
+					new MapRange
+					{
+						SourceStart = start,
+						DestinationStart = start,
+						Length = range.SourceStart - start,
+					}
+				);
+			}
+			allRanges.Add(range);
+			start = range.SourceStart + range.Length;
+		}
+
+		return allRanges;
+	}
+
+	private static MapRange GetReversedRange(MapRange range) =>
+		range with
+		{
+			SourceStart = range.DestinationStart,
+			DestinationStart = range.SourceStart,
+		};
+
+	private static List<(long Start, long End)> GetSeedRanges(IReadOnlyList<long> seeds)
+	{
+		if (seeds.Count % 2 != 0)
+		{
+			throw new ArgumentException(
+				"Seed ranges must have an even number of inputs",
+				nameof(seeds)
+			);
+		}
+
+		return seeds.Chunk(2).Select(pair => (pair[0], pair[0] + pair[1])).ToList();
+	}
+	#endregion Puzzle two
+
+	#region Common
 
 	private static Almanac CreateAlmanac(IReadOnlyList<string> lines)
 	{
@@ -61,10 +184,8 @@ public partial class Day5 : IDay
 				++lineNumber;
 			}
 
-			var ranges = rangesSource
-				.Select(CreateRange)
-				.OrderBy(range => range.SourceStart)
-				.ToList();
+			var ranges = rangesSource.Select(CreateRange).ToList();
+
 			maps.Add(
 				new Map
 				{
@@ -109,39 +230,9 @@ public partial class Day5 : IDay
 		};
 	}
 
-	private static long MapToValue(long val, string from, string final, IReadOnlyList<Map> maps)
-	{
-		while (!string.Equals(from, final, StringComparison.Ordinal))
-		{
-			var map = maps.First(m => m.From.Equals(from, StringComparison.Ordinal));
-			long? mappedVal = null;
-			foreach (var range in map.Ranges)
-			{
-				var offset = val - range.SourceStart;
-				if (offset >= 0 && offset < range.Length)
-				{
-					mappedVal = range.DestinationStart + offset;
-					break;
-				}
-			}
+	#endregion Common
 
-			val = mappedVal ?? val;
-			from = map.To;
-		}
-
-		return val;
-	}
-
-	#endregion Puzzle one
-
-	#region Puzzle two
-
-	private static int RunPuzzleTwo(string[] lines)
-	{
-		return 0;
-	}
-
-	#endregion Puzzle two
+	#region Types
 
 	private sealed record Almanac
 	{
@@ -174,4 +265,6 @@ public partial class Day5 : IDay
 		RegexOptions.Compiled
 	)]
 	private static partial Regex RangeRegex();
+
+	#endregion Types
 }
