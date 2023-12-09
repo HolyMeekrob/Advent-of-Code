@@ -19,4 +19,11 @@ public static class EnumerableExtensions
 	/// <returns>True if no elements in the sequence satisfy the condition, false otherwise.</returns>
 	public static bool None<T>(this IEnumerable<T> source, Func<T, bool> predicate) =>
 		!source.Any(predicate);
+
+	/// <summary>
+	/// Calculates the product of all the integers in the given sequence.
+	/// </summary>
+	/// <param name="source">The sequence of integers.</param>
+	/// <returns>The product of all the integers in the sequence.</returns>
+	public static int Product(this IEnumerable<int> source) => source.Aggregate((x, y) => x * y);
 }
