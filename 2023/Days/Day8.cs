@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using _2023.Utils;
 using static _2023.Utils.InputUtils;
 using Path = (string Left, string Right);
 
@@ -8,6 +9,8 @@ public sealed partial class Day8 : IDay
 {
 	private const string Start = "AAA";
 	private const string End = "ZZZ";
+	private const char StartChar = 'A';
+	private const char EndChar = 'Z';
 
 	public (string PartOne, string PartTwo) Run(bool isTest)
 	{
@@ -77,9 +80,99 @@ public sealed partial class Day8 : IDay
 
 	#region Puzzle two
 
-	private static int RunPuzzleTwo(bool isTest)
+	private static long RunPuzzleTwo(bool isTest)
 	{
-		return 0;
+		var lines = isTest ? GetAllLines(isTest, 8, 3) : GetAllLines(isTest, 8);
+		var instructions = lines[0].Select(ParseDirection).ToList();
+
+		var network = GetNetwork(lines.Skip(1).ToList());
+		return GetParallelStepsToEnd(instructions, network);
+	}
+
+	private static long GetParallelStepsToEnd(
+		IReadOnlyList<Direction> instructions,
+		IReadOnlyDictionary<string, Path> network
+	)
+	{
+		// Implementation note: Each path cycles to one destination at a regular interval.
+		// They do not end at multiple destinations, and they only have one cycle.
+		// Andy's comment: This is a lame puzzle because there's no indication that that's true
+		// except by trial and error and by deducing that otherwise the puzzle is not solveable in
+		// a reasonable amount of time.
+		var nodes = network.Keys.Where(key => key.EndsWith(StartChar)).ToList();
+
+		var cycleLengths = nodes
+			.Select(node => GetCycleLength(node, instructions, network))
+			.ToList();
+		return GetLeastCommonMultiple(cycleLengths);
+	}
+
+	private static long GetCycleLength(
+		string start,
+		IReadOnlyList<Direction> instructions,
+		IReadOnlyDictionary<string, Path> network
+	)
+	{
+		var instructionsCount = instructions.Count;
+		var instructionOffset = 0;
+		var steps = 0L;
+		var node = start;
+
+		while (!node.EndsWith(EndChar))
+		{
+			var instruction = instructions[instructionOffset];
+			var path = network[node];
+
+			node = instruction switch
+			{
+				Direction.Left => path.Left,
+				Direction.Right => path.Right,
+				_ => throw new Exception($"Unknown direction {node} somehow"),
+			};
+			instructionOffset = (instructionOffset + 1) % instructionsCount;
+			++steps;
+		}
+
+		return steps;
+	}
+
+	private static long GetLeastCommonMultiple(IReadOnlyList<long> numbers)
+	{
+		if (numbers.IsEmpty())
+		{
+			throw new ArgumentException(
+				"Cannot compute the least common multiple of an empty list"
+			);
+		}
+
+		if (numbers.Count == 1)
+		{
+			return numbers[0];
+		}
+
+		if (numbers.Count == 2)
+		{
+			return numbers[0] * numbers[1] / GetGreatestCommonDivisor(numbers[0], numbers[1]);
+		}
+
+		return GetLeastCommonMultiple(
+			[numbers[0], GetLeastCommonMultiple(numbers.Skip(1).ToList())]
+		);
+	}
+
+	private static long GetGreatestCommonDivisor(long x, long y)
+	{
+		var a = Math.Max(x, y);
+		var b = Math.Min(x, y);
+
+		while (a != b)
+		{
+			var delta = a - b;
+			a = Math.Max(delta, b);
+			b = Math.Min(delta, b);
+		}
+
+		return a;
 	}
 
 	#endregion Puzzle two
