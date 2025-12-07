@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/list
 import gleam/string
 import simplifile
 
@@ -22,7 +23,7 @@ pub fn get_input(day: Int, is_test: Bool) -> Result(String, String) {
   }
 }
 
-/// Divides a string into evenly sized chunks
+/// Divides a string into evenly sized chunks.
 pub fn chunk_string(str: String, length: Int) -> List(String) {
   append_chunks(str, length, [])
 }
@@ -35,5 +36,27 @@ fn append_chunks(str: String, length: Int, chunks: List(String)) -> List(String)
         string.slice(str, -length, length),
         ..chunks
       ])
+  }
+}
+
+/// Drops `n` elements from the end of the list.
+pub fn drop_end(from vals: List(a), count n: Int) -> List(a) {
+  list.take(vals, list.length(vals) - n)
+}
+
+/// Takes a function that returns a boolean and returns
+/// a function that returns the negation of the result of
+/// calling the original function.
+pub fn complement(fun: fn(a) -> Bool) -> fn(a) -> Bool {
+  fn(x) { !fun(x) }
+}
+
+/// Returns the first index of a value within a list
+/// or `-1` if the value doesn't appear within the list.
+pub fn index_of(vals: List(a), val: a) -> Int {
+  case vals {
+    [] -> -1
+    [head, ..] if head == val -> 0
+    [_, ..rest] -> 1 + index_of(rest, val)
   }
 }

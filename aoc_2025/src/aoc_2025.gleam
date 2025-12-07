@@ -2,6 +2,7 @@ import argv
 import common
 import day1
 import day2
+import day3
 import gleam/int
 import gleam/io
 import gleam/string
@@ -45,6 +46,7 @@ fn run_day(day: Int, is_test: Bool) -> Nil {
   let solution = case day {
     1 -> day1.solve(is_test)
     2 -> day2.solve(is_test)
+    3 -> day3.solve(is_test)
     _ -> common.Solution("Not implemented", "Not implemented")
   }
 
