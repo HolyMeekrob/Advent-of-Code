@@ -38,7 +38,6 @@ fn read(line: String) -> Rotation {
 }
 
 fn solve_1(rotations: List(Rotation)) -> String {
-  // Answer is 1021
   solve_part(rotations, count_ending_zeroes)
 }
 

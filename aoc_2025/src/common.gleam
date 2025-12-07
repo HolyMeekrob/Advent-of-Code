@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/string
 import simplifile
 
 pub type Solution {
@@ -18,5 +19,21 @@ pub fn get_input(day: Int, is_test: Bool) -> Result(String, String) {
   case simplifile.read(from: filepath) {
     Ok(contents) -> Ok(contents)
     Error(_) -> Error("Error reading file")
+  }
+}
+
+/// Divides a string into evenly sized chunks
+pub fn chunk_string(str: String, length: Int) -> List(String) {
+  append_chunks(str, length, [])
+}
+
+fn append_chunks(str: String, length: Int, chunks: List(String)) -> List(String) {
+  case string.length(str) {
+    0 -> chunks
+    _ ->
+      append_chunks(string.drop_end(str, length), length, [
+        string.slice(str, -length, length),
+        ..chunks
+      ])
   }
 }
