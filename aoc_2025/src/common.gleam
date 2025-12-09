@@ -60,3 +60,8 @@ pub fn index_of(vals: List(a), val: a) -> Int {
     [_, ..rest] -> 1 + index_of(rest, val)
   }
 }
+
+/// Returns whether `val` is less than `comparison`.
+pub fn int_less_than(val: Int, comparison: Int) -> Bool {
+  val < comparison
+}
