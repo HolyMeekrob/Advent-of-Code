@@ -1,5 +1,6 @@
 import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
 import simplifile
 
@@ -64,4 +65,16 @@ pub fn index_of(vals: List(a), val: a) -> Int {
 /// Returns whether `val` is less than `comparison`.
 pub fn int_less_than(val: Int, comparison: Int) -> Bool {
   val < comparison
+}
+
+/// Determines if a `String` is non-empty.
+pub fn string_is_not_empty(str: String) -> Bool {
+  !string.is_empty(str)
+}
+
+/// Parse a known integer
+pub fn parse_int(str: String) -> Int {
+  str
+  |> int.parse
+  |> result.unwrap(0)
 }
