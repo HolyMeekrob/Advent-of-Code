@@ -7,6 +7,7 @@ import day4
 import day5
 import day6
 import day7
+import day8
 import gleam/int
 import gleam/io
 import gleam/string
@@ -55,6 +56,7 @@ fn run_day(day: Int, is_test: Bool) -> Nil {
     5 -> day5.solve(is_test)
     6 -> day6.solve(is_test)
     7 -> day7.solve(is_test)
+    8 -> day8.solve(is_test)
     _ -> common.Solution("Not implemented", "Not implemented")
   }
 
